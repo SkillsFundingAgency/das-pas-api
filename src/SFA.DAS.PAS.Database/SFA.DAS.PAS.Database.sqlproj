@@ -28,4 +28,7 @@
     <Build Include="UserDefinedTypes\IdamsUser.sql" />
     <Build Include="UserDefinedTypes\Providers.sql" />
   </ItemGroup>
+  <ItemGroup>
+    <PreDeploy Include="Script.PreDeployment.sql" />
+  </ItemGroup>
 </Project>
