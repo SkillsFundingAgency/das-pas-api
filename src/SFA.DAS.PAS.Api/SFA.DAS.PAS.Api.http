@@ -1,0 +1,7 @@
+@SFA.DAS.PAS.Api_HostAddress = https://localhost:7070
+
+GET {{SFA.DAS.PAS.Api_HostAddress}}/api/account/10012001/users
+Accept: application/json
+Header: X-Version/1
+
+###

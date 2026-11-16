@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Tests/" />
+  <Project Path="SFA.DAS.PAS.Api/SFA.DAS.PAS.Api.csproj" Id="46a66d1f-3e56-4f14-966a-ddadc55afd31" />
+  <Project Path="SFA.DAS.PAS.Application/SFA.DAS.PAS.Application.csproj" Id="cc3bc8c4-fb6e-4c59-9bb9-5464ff355d1b" />
+  <Project Path="SFA.DAS.PAS.Data/SFA.DAS.PAS.Data.csproj" Id="a3ec73f1-c982-491d-aedf-00e176e49aa3" />
+  <Project Path="SFA.DAS.PAS.Database/SFA.DAS.PAS.Database.sqlproj" Type="42ea0dbd-9cf1-443e-919e-be9c484e4577" Id="0f7077b7-5bff-4b98-a618-06ce91e7bd0f" />
+  <Project Path="SFA.DAS.PAS.Domain/SFA.DAS.PAS.Domain.csproj" Id="e016841b-965c-416f-8a29-bdbd5a9c83d5" />
+</Solution>

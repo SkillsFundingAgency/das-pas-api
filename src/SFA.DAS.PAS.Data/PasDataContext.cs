@@ -16,6 +16,9 @@ public class PasDataContext : DbContext, IPasDataContext
     public DbSet<Provider> Providers => Set<Provider>();
     public DbSet<User> Users => Set<User>();
     public DbSet<UserSettings> UserSettings => Set<UserSettings>();
+    public PasDataContext() { }
+    public PasDataContext(DbContextOptions<PasDataContext> options) : base(options) { }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

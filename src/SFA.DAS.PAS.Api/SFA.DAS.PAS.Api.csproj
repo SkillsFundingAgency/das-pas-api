@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.15" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1" />
+    <PackageReference Include="SFA.DAS.Configuration.AzureTableStorage" Version="17.1.165" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SFA.DAS.PAS.Application\SFA.DAS.PAS.Application.csproj" />
+    <ProjectReference Include="..\SFA.DAS.PAS.Data\SFA.DAS.PAS.Data.csproj" />
+  </ItemGroup>
+
+</Project>
