@@ -9,7 +9,7 @@ public interface IUserSettingsService
     Task UpsertUserSettings(UserSettingsModel userSettings, CancellationToken cancellationToken);
 }
 
-internal class UserSettingsService(IUserSettingsRepository _userSettingsRepository) : IUserSettingsService
+public class UserSettingsService(IUserSettingsRepository _userSettingsRepository) : IUserSettingsService
 {
     public async Task UpsertUserSettings(UserSettingsModel userSettings, CancellationToken cancellationToken)
     {

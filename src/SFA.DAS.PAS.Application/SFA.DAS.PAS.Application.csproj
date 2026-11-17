@@ -14,4 +14,8 @@
     <ProjectReference Include="..\SFA.DAS.PAS.Domain\SFA.DAS.PAS.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="SFA.DAS.PAS.Application.UnitTests" />
+  </ItemGroup>
+
 </Project>

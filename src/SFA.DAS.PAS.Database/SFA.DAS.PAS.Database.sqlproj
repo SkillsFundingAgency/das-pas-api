@@ -17,6 +17,7 @@
     <Folder Include="Tables\" />
     <Folder Include="UserDefinedTypes\" />
     <Folder Include="StoredProcedures\" />
+    <Folder Include="Scripts" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="StoredProcedures\ImportProviders.sql" />
@@ -27,6 +28,7 @@
     <Build Include="Tables\UserSettings.sql" />
     <Build Include="UserDefinedTypes\IdamsUser.sql" />
     <Build Include="UserDefinedTypes\Providers.sql" />
+    <None Include="Scripts\AddHocQueries.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Script.PreDeployment.sql" />

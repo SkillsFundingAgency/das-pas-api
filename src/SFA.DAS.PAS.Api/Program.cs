@@ -8,7 +8,6 @@ using SFA.DAS.PAS.Api.Extensions;
 using SFA.DAS.PAS.Api.Infrastructure;
 using SFA.DAS.PAS.Application.Extensions;
 using SFA.DAS.PAS.Data.Extensions;
-using SFA.DAS.Telemetry.Startup;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +15,7 @@ IConfiguration _configuration = builder.Configuration.LoadConfiguration();
 
 bool _isLocal = _configuration.IsLocalEnvironment();
 string connectionString = _configuration["DatabaseConnectionString"]!;
+string applicationInsightsConnectionString = _configuration["ApplicationInsightsConnectionString"]!;
 
 // Add services to the container.
 
@@ -26,7 +26,7 @@ builder.Services
 
 builder.Services
     .AddLogging()
-    .AddTelemetryNotFoundAsSuccessfulResponse();
+    .AddOpenTelemetryRegistration(applicationInsightsConnectionString);
 
 builder.Services
     .AddOpenApi()

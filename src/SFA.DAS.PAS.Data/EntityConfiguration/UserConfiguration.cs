@@ -12,6 +12,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.HasKey(user => user.Id);
 
+        builder.Property(user => user.Ukprn)
+            .HasConversion<long>();
+
         builder.HasOne(user => user.UserSettings)
             .WithOne()
             .HasForeignKey<UserSettings>(settings => settings.UserId)

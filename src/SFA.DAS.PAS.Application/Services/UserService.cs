@@ -9,7 +9,7 @@ public interface IUserService
     Task<IEnumerable<UserModel>> GetUsersByUkprn(int ukprn, CancellationToken cancellationToken);
 }
 
-internal class UserService(IUserRepository _userRepository) : IUserService
+public class UserService(IUserRepository _userRepository) : IUserService
 {
     public async Task<IEnumerable<UserModel>> GetUsersByUkprn(int ukprn, CancellationToken cancellationToken)
     {

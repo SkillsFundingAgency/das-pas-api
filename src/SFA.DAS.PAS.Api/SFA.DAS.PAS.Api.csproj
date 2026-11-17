@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.6.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.15" />
     <PackageReference Include="SFA.DAS.Api.Common" Version="17.1.196" />
-    <PackageReference Include="SFA.DAS.Telemetry" Version="17.1.212" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1" />
     <PackageReference Include="SFA.DAS.Configuration.AzureTableStorage" Version="17.1.165" />
   </ItemGroup>

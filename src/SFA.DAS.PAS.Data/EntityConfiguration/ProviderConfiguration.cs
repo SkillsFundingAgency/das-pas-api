@@ -9,5 +9,8 @@ public class ProviderConfiguration : IEntityTypeConfiguration<Provider>
     public void Configure(EntityTypeBuilder<Provider> builder)
     {
         builder.HasKey(provider => provider.Ukprn);
+
+        builder.Property(provider => provider.Ukprn)
+            .HasConversion<long>();
     }
 }
