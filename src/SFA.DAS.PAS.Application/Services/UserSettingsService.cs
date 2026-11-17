@@ -6,20 +6,28 @@ namespace SFA.DAS.PAS.Application.Services;
 
 public interface IUserSettingsService
 {
-    Task UpsertUserSettings(UserSettingsModel userSettings, CancellationToken cancellationToken);
+    Task<bool> UpsertUserSettings(UserSettingsModel userSettings, CancellationToken cancellationToken);
 }
 
-public class UserSettingsService(IUserSettingsRepository _userSettingsRepository) : IUserSettingsService
+public class UserSettingsService(IUserSettingsRepository _userSettingsRepository, IUserRepository userRepository) : IUserSettingsService
 {
-    public async Task UpsertUserSettings(UserSettingsModel userSettings, CancellationToken cancellationToken)
+    public async Task<bool> UpsertUserSettings(UserSettingsModel userSettings, CancellationToken cancellationToken)
     {
-        UserSettings? entity = await _userSettingsRepository.GetById(userSettings.UserRef, cancellationToken);
+        var user = await userRepository.GetActiveUserByUserRef(userSettings.UserRef, cancellationToken);
+        if (user is null)
+        {
+            return false;
+        }
+
+        var entity = user.UserSettings;
         if (entity is null)
         {
             entity = new UserSettings
             {
-                UserRef = userSettings.UserRef,
-                ReceiveNotifications = userSettings.ReceiveNotifications
+                UserId = user.Id,
+                UserRef = user.UserRef,
+                ReceiveNotifications = userSettings.ReceiveNotifications,
+                User = user
             };
             await _userSettingsRepository.Insert(entity, cancellationToken);
         }
@@ -28,5 +36,7 @@ public class UserSettingsService(IUserSettingsRepository _userSettingsRepository
             entity.ReceiveNotifications = userSettings.ReceiveNotifications;
             await _userSettingsRepository.Update(entity, cancellationToken);
         }
+
+        return true;
     }
 }

@@ -16,7 +16,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasConversion<long>();
 
         builder.HasOne(user => user.UserSettings)
-            .WithOne()
+            .WithOne(settings => settings.User)
             .HasForeignKey<UserSettings>(settings => settings.UserId)
             .OnDelete(DeleteBehavior.NoAction);
     }

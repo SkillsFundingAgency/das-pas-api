@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using SFA.DAS.Api.Common.AppStart;
+﻿using SFA.DAS.Api.Common.AppStart;
 using SFA.DAS.Api.Common.Configuration;
 
 namespace SFA.DAS.PAS.Api.Authentication;
@@ -25,13 +24,14 @@ public static class AddAuthenticationExtension
         }
         else
         {
+            services.AddAuthentication();
             services.AddAuthorization(options =>
             {
                 foreach (var policyName in new string[] { Policies.ReadAccountUsers, Policies.ReadUserSettings, Policies.Management })
                 {
                     options.AddPolicy(policyName, policy =>
                     {
-                        policy.Requirements.Add(new NoneRequirement());
+                        policy.RequireAssertion(_ => true);
                     });
                 }
             });
@@ -40,5 +40,3 @@ public static class AddAuthenticationExtension
         return services;
     }
 }
-
-public class NoneRequirement : IAuthorizationRequirement;

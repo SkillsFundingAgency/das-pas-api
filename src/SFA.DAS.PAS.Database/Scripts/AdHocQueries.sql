@@ -1,4 +1,14 @@
--- TEST DATA FOR USER AND USER SETTINGS TABLES
+-- TEST DATA FOR PROVIDERS, USER AND USER SETTINGS TABLES
+
+INSERT INTO [dbo].[Providers] ([Ukprn], [Name], [Created], [Updated], [UpdatedFromIDAMS])
+SELECT v.Ukprn, v.Name, v.Created, v.Updated, v.UpdatedFromIDAMS
+FROM (VALUES
+    (CAST(10000001 AS BIGINT), N'Provider One',   DATEADD(DAY, -365, SYSUTCDATETIME()), DATEADD(DAY, -10, SYSUTCDATETIME()), DATEADD(DAY, -1, SYSUTCDATETIME())),
+    (CAST(10000002 AS BIGINT), N'Provider Two',   DATEADD(DAY, -200, SYSUTCDATETIME()), NULL,                                 DATEADD(DAY, -2, SYSUTCDATETIME())),
+    (CAST(10000003 AS BIGINT), N'Provider Three', DATEADD(DAY, -30,  SYSUTCDATETIME()), NULL,                                 NULL),
+    (CAST(10000004 AS BIGINT), N'Provider Four (no users)', DATEADD(DAY, -5, SYSUTCDATETIME()), NULL,                         NULL)
+) AS v (Ukprn, Name, Created, Updated, UpdatedFromIDAMS)
+WHERE NOT EXISTS (SELECT 1 FROM [dbo].[Providers] p WHERE p.Ukprn = v.Ukprn);
 
 INSERT INTO [dbo].[User] ([UserRef], [DisplayName], [Ukprn], [Email], [IsDeleted], [UserType], [LastLogin])
 SELECT v.UserRef, v.DisplayName, v.Ukprn, v.Email, v.IsDeleted, v.UserType, v.LastLogin
@@ -18,6 +28,7 @@ FROM [dbo].[User] u
 WHERE u.UserRef IN ('USR-0001','USR-0002','USR-0004','USR-0005')
   AND NOT EXISTS (SELECT 1 FROM [dbo].[UserSettings] s WHERE s.UserId = u.Id);
 
+select * from [dbo].[Providers]
 select * from [dbo].[User]
 select * from [dbo].[UserSettings]
 

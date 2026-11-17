@@ -31,5 +31,7 @@ public static class AddPasDataContextExtension
     private static void AddRepositories(IServiceCollection services)
     {
         services.AddTransient<IUserRepository, UserRepository>();
+        services.AddTransient<IUserSettingsRepository, UserSettingsRepository>();
+        services.AddTransient<IProviderRepository, ProviderRepository>();
     }
 }

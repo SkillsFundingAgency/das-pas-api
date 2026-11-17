@@ -82,13 +82,6 @@ app.UseHealthChecks("/ping",
         ResponseWriter = HealthCheckResponseWriter.WriteJsonResponse
     });
 
-if (_isLocal)
-{
-    app.MapControllers().AllowAnonymous();
-}
-else
-{
-    app.MapControllers();
-}
+app.MapControllers();
 
 await app.RunAsync();

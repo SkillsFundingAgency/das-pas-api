@@ -11,18 +11,25 @@ namespace SFA.DAS.PAS.Application.UnitTests.Services;
 public class UserSettingsServiceTests
 {
     [Test, RecursiveMoqAutoData]
-    public async Task WhenUpsertingUserSettings_ThenLooksUpSettingsByUserRef(
+    public async Task WhenUpsertingUserSettings_ThenLoadsUserWithSettingsOnce(
         UserSettingsModel model,
+        User user,
         UserSettings existing,
+        [Frozen] Mock<IUserRepository> userRepositoryMock,
         [Frozen] Mock<IUserSettingsRepository> repositoryMock,
         UserSettingsService sut)
     {
         using var cancellation = new CancellationTokenSource();
-        repositoryMock.Setup(repository => repository.GetById(model.UserRef, cancellation.Token)).ReturnsAsync(existing);
+        userRepositoryMock.Setup(repository => repository.GetActiveUserByUserRef(model.UserRef, cancellation.Token)).ReturnsAsync(user);
+        user.UserSettings = existing;
 
-        await sut.UpsertUserSettings(model, cancellation.Token);
+        var result = await sut.UpsertUserSettings(model, cancellation.Token);
 
-        repositoryMock.Verify(repository => repository.GetById(model.UserRef, cancellation.Token), Times.Once);
+        Assert.That(result, Is.True);
+        userRepositoryMock.Verify(repository => repository.GetActiveUserByUserRef(model.UserRef, cancellation.Token), Times.Once);
+        userRepositoryMock.VerifyNoOtherCalls();
+        repositoryMock.Verify(repository => repository.Update(existing, cancellation.Token), Times.Once);
+        repositoryMock.VerifyNoOtherCalls();
     }
 
     [Test]
@@ -31,19 +38,27 @@ public class UserSettingsServiceTests
     public async Task WhenUpsertingUserSettings_AndSettingsDoNotExist_ThenInsertsNewSettings(
         bool receiveNotifications,
         UserSettingsModel model,
+        User user,
+        [Frozen] Mock<IUserRepository> userRepositoryMock,
         [Frozen] Mock<IUserSettingsRepository> repositoryMock,
         UserSettingsService sut)
     {
         using var cancellation = new CancellationTokenSource();
         model = model with { ReceiveNotifications = receiveNotifications };
-        repositoryMock.Setup(repository => repository.GetById(model.UserRef, cancellation.Token)).ReturnsAsync((UserSettings?)null);
+        user.UserRef = model.UserRef;
+        user.UserSettings = null;
+        userRepositoryMock.Setup(repository => repository.GetActiveUserByUserRef(model.UserRef, cancellation.Token)).ReturnsAsync(user);
 
-        await sut.UpsertUserSettings(model, cancellation.Token);
+        var result = await sut.UpsertUserSettings(model, cancellation.Token);
 
+        Assert.That(result, Is.True);
         repositoryMock.Verify(repository => repository.Insert(
-            It.Is<UserSettings>(settings => settings.UserRef == model.UserRef && settings.ReceiveNotifications == receiveNotifications),
+            It.Is<UserSettings>(settings => settings.UserId == user.Id && settings.UserRef == model.UserRef && settings.ReceiveNotifications == receiveNotifications),
             cancellation.Token), Times.Once);
         repositoryMock.Verify(repository => repository.Update(It.IsAny<UserSettings>(), It.IsAny<CancellationToken>()), Times.Never);
+        repositoryMock.VerifyNoOtherCalls();
+        userRepositoryMock.Verify(repository => repository.GetActiveUserByUserRef(model.UserRef, cancellation.Token), Times.Once);
+        userRepositoryMock.VerifyNoOtherCalls();
     }
 
     [Test]
@@ -52,32 +67,41 @@ public class UserSettingsServiceTests
     public async Task WhenUpsertingUserSettings_AndSettingsExist_ThenUpdatesExistingSettings(
         bool receiveNotifications,
         UserSettingsModel model,
+        User user,
         UserSettings existing,
+        [Frozen] Mock<IUserRepository> userRepositoryMock,
         [Frozen] Mock<IUserSettingsRepository> repositoryMock,
         UserSettingsService sut)
     {
         using var cancellation = new CancellationTokenSource();
+        userRepositoryMock.Setup(repository => repository.GetActiveUserByUserRef(model.UserRef, cancellation.Token)).ReturnsAsync(user);
         model = model with { ReceiveNotifications = receiveNotifications };
         existing.ReceiveNotifications = !receiveNotifications;
-        repositoryMock.Setup(repository => repository.GetById(model.UserRef, cancellation.Token)).ReturnsAsync(existing);
+        user.UserSettings = existing;
 
         await sut.UpsertUserSettings(model, cancellation.Token);
 
         Assert.That(existing.ReceiveNotifications, Is.EqualTo(receiveNotifications));
         repositoryMock.Verify(repository => repository.Update(existing, cancellation.Token), Times.Once);
         repositoryMock.Verify(repository => repository.Insert(It.IsAny<UserSettings>(), It.IsAny<CancellationToken>()), Times.Never);
+        repositoryMock.VerifyNoOtherCalls();
+        userRepositoryMock.Verify(repository => repository.GetActiveUserByUserRef(model.UserRef, cancellation.Token), Times.Once);
+        userRepositoryMock.VerifyNoOtherCalls();
     }
 
     [Test, RecursiveMoqAutoData]
     public async Task WhenUpsertingUserSettings_AndSettingsExist_ThenDoesNotChangeSettingsIdentity(
         UserSettingsModel model,
+        User user,
         UserSettings existing,
+        [Frozen] Mock<IUserRepository> userRepositoryMock,
         [Frozen] Mock<IUserSettingsRepository> repositoryMock,
         UserSettingsService sut)
     {
         using var cancellation = new CancellationTokenSource();
+        userRepositoryMock.Setup(repository => repository.GetActiveUserByUserRef(model.UserRef, cancellation.Token)).ReturnsAsync(user);
         var (id, userId, userRef) = (existing.Id, existing.UserId, existing.UserRef);
-        repositoryMock.Setup(repository => repository.GetById(model.UserRef, cancellation.Token)).ReturnsAsync(existing);
+        user.UserSettings = existing;
 
         await sut.UpsertUserSettings(model, cancellation.Token);
 
@@ -87,5 +111,22 @@ public class UserSettingsServiceTests
             Assert.That(existing.UserId, Is.EqualTo(userId));
             Assert.That(existing.UserRef, Is.EqualTo(userRef));
         });
+    }
+
+    [Test, RecursiveMoqAutoData]
+    public async Task WhenUserDoesNotExist_ThenReturnsFalseWithoutWritingSettings(
+        UserSettingsModel model,
+        [Frozen] Mock<IUserRepository> userRepositoryMock,
+        [Frozen] Mock<IUserSettingsRepository> repositoryMock,
+        UserSettingsService sut)
+    {
+        using var cancellation = new CancellationTokenSource();
+        userRepositoryMock.Setup(repository => repository.GetActiveUserByUserRef(model.UserRef, cancellation.Token)).ReturnsAsync((User?)null);
+
+        var result = await sut.UpsertUserSettings(model, cancellation.Token);
+
+        Assert.That(result, Is.False);
+        userRepositoryMock.Verify(repository => repository.GetActiveUserByUserRef(model.UserRef, cancellation.Token), Times.Once);
+        repositoryMock.VerifyNoOtherCalls();
     }
 }

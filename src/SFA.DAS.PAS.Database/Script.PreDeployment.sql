@@ -12,13 +12,16 @@
 
 /* Begin Delete any duplicates in UserSettings table to allow the constraints to be applied */
 
-WITH CTE AS (
-    SELECT 
-        userref,
-        ROW_NUMBER() OVER (PARTITION BY userref ORDER BY (SELECT NULL)) AS row_num
-    FROM UserSettings
-)
-DELETE FROM CTE
-WHERE row_num > 1;
+ IF OBJECT_ID(N'dbo.UserSettings', N'U') IS NOT NULL
+ BEGIN
+     ;WITH CTE AS (
+         SELECT
+             userref,
+             ROW_NUMBER() OVER (PARTITION BY userref ORDER BY (SELECT NULL)) AS row_num
+         FROM [dbo].[UserSettings]
+     )
+     DELETE FROM CTE
+     WHERE row_num > 1;
+ END;
 
 /* end remove script after first deployment */

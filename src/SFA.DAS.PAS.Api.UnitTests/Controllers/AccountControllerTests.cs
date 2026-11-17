@@ -15,6 +15,7 @@ public class AccountControllerTests
     [MoqInlineAutoData(2)]
     public async Task WhenGettingUsers_ThenReturnsOkResults(
         int count,
+        [Frozen] Mock<IProviderService> providerServiceMock,
         [Frozen] Mock<IUserService> serviceMock,
         [Greedy] AccountController sut,
         int Ukprn)
@@ -28,13 +29,34 @@ public class AccountControllerTests
             ReceiveNotifications = true,
             IsSuperUser = false
         }).ToList();
+        providerServiceMock.Setup(service => service.Exists(Ukprn, cancellation.Token)).ReturnsAsync(true);
         serviceMock.Setup(service => service.GetUsersByUkprn(Ukprn, cancellation.Token)).ReturnsAsync(users);
 
         var result = await sut.GetProviderUsers(Ukprn, cancellation.Token);
 
         Assert.That(result, Is.TypeOf<OkObjectResult>());
         Assert.That(((OkObjectResult)result).Value, Is.SameAs(users));
+        providerServiceMock.Verify(service => service.Exists(Ukprn, cancellation.Token), Times.Once);
+        providerServiceMock.VerifyNoOtherCalls();
         serviceMock.Verify(service => service.GetUsersByUkprn(Ukprn, cancellation.Token), Times.Once);
+        serviceMock.VerifyNoOtherCalls();
+    }
+
+    [Test, MoqAutoData]
+    public async Task WhenProviderDoesNotExist_ThenReturnsNotFound(
+        int ukprn,
+        [Frozen] Mock<IProviderService> providerServiceMock,
+        [Frozen] Mock<IUserService> serviceMock,
+        [Greedy] AccountController sut)
+    {
+        using var cancellation = new CancellationTokenSource();
+        providerServiceMock.Setup(service => service.Exists(ukprn, cancellation.Token)).ReturnsAsync(false);
+
+        var result = await sut.GetProviderUsers(ukprn, cancellation.Token);
+
+        Assert.That(result, Is.TypeOf<NotFoundResult>());
+        providerServiceMock.Verify(service => service.Exists(ukprn, cancellation.Token), Times.Once);
+        providerServiceMock.VerifyNoOtherCalls();
         serviceMock.VerifyNoOtherCalls();
     }
 }

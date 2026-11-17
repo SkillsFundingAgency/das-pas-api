@@ -13,8 +13,8 @@ internal class UpdateTests : UserSettingsRepositoryTestBase
         var settings = CreateSettings(1, "user-ref", !receiveNotifications);
         var other = CreateSettings(2, "other-user", !receiveNotifications);
         await SeedAsync(settings, other);
-        var tracked = await Sut.GetById(settings.UserRef, CancellationToken.None);
-        tracked!.ReceiveNotifications = receiveNotifications;
+        var tracked = await Context.UserSettings.SingleAsync(entity => entity.UserId == settings.UserId);
+        tracked.ReceiveNotifications = receiveNotifications;
 
         await Sut.Update(tracked, CancellationToken.None);
         Context.ChangeTracker.Clear();

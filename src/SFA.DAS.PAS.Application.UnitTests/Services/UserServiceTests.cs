@@ -18,14 +18,14 @@ public class UserServiceTests
         using var cancellation = new CancellationTokenSource();
         repositoryMock.Setup(repository => repository.GetUsersByUkprn(user.Ukprn, cancellation.Token)).ReturnsAsync([user]);
 
-        var result = (await sut.GetUsersByUkprn(user.Ukprn, cancellation.Token)).ToList();
+        var users = await sut.GetUsersByUkprn(user.Ukprn, cancellation.Token);
 
         Assert.Multiple(() =>
         {
-            Assert.That(result, Has.Count.EqualTo(1));
-            Assert.That(result[0].UserRef, Is.EqualTo(user.UserRef));
-            Assert.That(result[0].EmailAddress, Is.EqualTo(user.Email));
-            Assert.That(result[0].DisplayName, Is.EqualTo(user.DisplayName));
+            Assert.That(users.Count(), Is.EqualTo(1));
+            Assert.That(users.First().UserRef, Is.EqualTo(user.UserRef));
+            Assert.That(users.First().EmailAddress, Is.EqualTo(user.Email));
+            Assert.That(users.First().DisplayName, Is.EqualTo(user.DisplayName));
         });
         repositoryMock.Verify(repository => repository.GetUsersByUkprn(user.Ukprn, cancellation.Token), Times.Once);
         repositoryMock.VerifyNoOtherCalls();
@@ -44,9 +44,9 @@ public class UserServiceTests
         user.UserType = userType;
         repositoryMock.Setup(repository => repository.GetUsersByUkprn(user.Ukprn, cancellation.Token)).ReturnsAsync([user]);
 
-        var result = (await sut.GetUsersByUkprn(user.Ukprn, cancellation.Token)).ToList();
+        var users = await sut.GetUsersByUkprn(user.Ukprn, cancellation.Token);
 
-        Assert.That(result[0].IsSuperUser, Is.EqualTo(userType == UserType.SuperUser));
+        Assert.That(users.First().IsSuperUser, Is.EqualTo(userType == UserType.SuperUser));
     }
 
     [Test]
@@ -62,12 +62,12 @@ public class UserServiceTests
         user.UserSettings = new UserSettings { UserRef = user.UserRef, ReceiveNotifications = receiveNotifications };
         repositoryMock.Setup(repository => repository.GetUsersByUkprn(user.Ukprn, cancellation.Token)).ReturnsAsync([user]);
 
-        var result = (await sut.GetUsersByUkprn(user.Ukprn, cancellation.Token)).ToList();
+        var users = await sut.GetUsersByUkprn(user.Ukprn, cancellation.Token);
 
-        Assert.That(result[0].ReceiveNotifications, Is.EqualTo(receiveNotifications));
+        Assert.That(users.First().ReceiveNotifications, Is.EqualTo(receiveNotifications));
     }
 
-    [Test, MoqAutoData]
+    [Test, RecursiveMoqAutoData]
     public async Task WhenGettingUsers_AndUserSettingsAreMissing_ThenSetsReceiveNotificationsToTrue(
         User user,
         [Frozen] Mock<IUserRepository> repositoryMock,
@@ -77,9 +77,24 @@ public class UserServiceTests
         user.UserSettings = null;
         repositoryMock.Setup(repository => repository.GetUsersByUkprn(user.Ukprn, cancellation.Token)).ReturnsAsync([user]);
 
-        var result = (await sut.GetUsersByUkprn(user.Ukprn, cancellation.Token)).ToList();
+        var users = await sut.GetUsersByUkprn(user.Ukprn, cancellation.Token);
 
-        Assert.That(result[0].ReceiveNotifications, Is.EqualTo(true));
+        Assert.That(users.First().ReceiveNotifications, Is.EqualTo(true));
     }
 
+    [Test, RecursiveMoqAutoData]
+    public async Task WhenThereAreNoUsers_ThenReturnsEmptyList(
+        int ukprn,
+        [Frozen] Mock<IUserRepository> repositoryMock,
+        UserService sut)
+    {
+        using var cancellation = new CancellationTokenSource();
+        repositoryMock.Setup(repository => repository.GetUsersByUkprn(ukprn, cancellation.Token)).ReturnsAsync([]);
+
+        var result = await sut.GetUsersByUkprn(ukprn, cancellation.Token);
+
+        Assert.That(result, Is.Not.Null.And.Empty);
+        repositoryMock.Verify(repository => repository.GetUsersByUkprn(ukprn, cancellation.Token), Times.Once);
+        repositoryMock.VerifyNoOtherCalls();
+    }
 }

@@ -6,6 +6,13 @@ namespace SFA.DAS.PAS.Data.Repositories;
 
 internal class UserRepository(IPasDataContext _pasDataContext) : IUserRepository
 {
+    public Task<User?> GetActiveUserByUserRef(string userRef, CancellationToken cancellationToken)
+    {
+        return _pasDataContext.Users
+            .Include(user => user.UserSettings)
+            .FirstOrDefaultAsync(user => user.UserRef == userRef && !user.IsDeleted, cancellationToken);
+    }
+
     public Task<List<User>> GetUsersByUkprn(int ukprn, CancellationToken cancellationToken)
     {
         return _pasDataContext

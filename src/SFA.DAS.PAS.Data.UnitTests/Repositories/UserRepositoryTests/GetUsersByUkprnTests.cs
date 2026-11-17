@@ -102,11 +102,8 @@ public class GetUsersByUkprnTests
         var result = await _sut.GetUsersByUkprn(Ukprn, CancellationToken.None);
 
         Assert.That(result, Has.Count.EqualTo(1));
-        Assert.Multiple(() =>
-        {
-            Assert.That(result[0].Id, Is.EqualTo(user.Id));
-            Assert.That(result[0].UserSettings, Is.Null);
-        });
+        Assert.That(result[0].UserSettings, Is.Null);
+        Assert.That(result[0].Id, Is.EqualTo(user.Id));
     }
 
     private static User CreateUser(long id, int ukprn, bool isDeleted = false)
