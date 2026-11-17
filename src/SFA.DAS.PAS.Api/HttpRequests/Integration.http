@@ -1,0 +1,6 @@
+
+# Get all users for an account
+GET {{baseUrl}}/api/account/10000001/users
+Accept: application/json
+
+###

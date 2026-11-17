@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.PAS.Api.Authentication;
 using SFA.DAS.PAS.Api.Infrastructure;
@@ -9,6 +10,7 @@ namespace SFA.DAS.PAS.Api.Controllers.Integration;
 
 [Route("api")]
 [ApiController]
+[ApiVersion("1.0")]
 [Authorize(Policy = Policies.ReadAccountUsers)]
 [Tags(ApiTags.Integration)]
 public class AccountController(IUserService _userService, IProviderService providerService) : ControllerBase

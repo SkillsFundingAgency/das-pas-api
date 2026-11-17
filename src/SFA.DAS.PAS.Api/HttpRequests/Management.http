@@ -1,0 +1,13 @@
+
+## USER SETTINGS
+
+# Fetch settings for a given user id
+PUT {{baseUrl}}/users/usr-0001/settings
+Content-Type: application/json
+X-Version: 1
+
+{
+  "receiveNotifications": true
+}
+
+###

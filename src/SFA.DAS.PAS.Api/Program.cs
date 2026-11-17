@@ -1,4 +1,3 @@
-using Asp.Versioning;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.OpenApi;
 using SFA.DAS.Api.Common.Infrastructure;
@@ -29,32 +28,44 @@ builder.Services
     .AddOpenTelemetryRegistration(applicationInsightsConnectionString);
 
 builder.Services
-    .AddOpenApi()
-    .AddEndpointsApiExplorer()
-    .AddSwaggerGen(options =>
+    .AddOpenApi(ApiTags.Integration, options =>
     {
-        options.SwaggerDoc(ApiTags.Integration, new OpenApiInfo
+        options.ShouldInclude = description => description.GroupName == ApiTags.Integration;
+        options.AddDocumentTransformer((document, context, cancellationToken) =>
         {
-            Title = "PAS API Integration Endpoints",
-            Version = "v1"
+            document.Info = new OpenApiInfo
+            {
+                Title = "PAS API Integration Endpoints",
+                Version = "v1"
+            };
+            return Task.CompletedTask;
         });
-        options.SwaggerDoc(ApiTags.Management, new OpenApiInfo
+        options.AddOperationTransformer<VersionHeaderTransformer>();
+        options.AddOperationTransformer<AuthorizationHeaderTransformer>();
+    })
+    .AddOpenApi(ApiTags.Management, options =>
+    {
+        options.ShouldInclude = description => description.GroupName == ApiTags.Management;
+        options.AddDocumentTransformer((document, context, cancellationToken) =>
         {
-            Title = "PAS API Management Endpoints",
-            Version = "v1"
+            document.Info = new OpenApiInfo
+            {
+                Title = "PAS API Management Endpoints",
+                Version = "v1"
+            };
+            return Task.CompletedTask;
         });
-    });
+        options.AddOperationTransformer<VersionHeaderTransformer>();
+        options.AddOperationTransformer<AuthorizationHeaderTransformer>();
+    })
+    .AddEndpointsApiExplorer();
 
 builder.Services.AddControllers(options =>
     {
         options.Conventions.Add(new ApiExplorerGroupingByTagAttributeConvention());
     });
 
-builder.Services.AddApiVersioning(opt =>
-    {
-        opt.ApiVersionReader = new HeaderApiVersionReader("X-Version");
-        opt.DefaultApiVersion = new ApiVersion(1, 0);
-    });
+builder.Services.AddApiVersioningRegistration();
 
 
 var app = builder.Build();
@@ -62,12 +73,11 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
-app.MapOpenApi();
-app.UseSwagger();
+app.MapOpenApi("/swagger/{documentName}/swagger.json");
 app.UseSwaggerUI(options =>
 {
-    options.SwaggerEndpoint($"swagger/{ApiTags.Integration}/swagger.json", ApiTags.Integration);
-    options.SwaggerEndpoint($"swagger/{ApiTags.Management}/swagger.json", ApiTags.Management);
+    options.SwaggerEndpoint($"/swagger/{ApiTags.Integration}/swagger.json", ApiTags.Integration);
+    options.SwaggerEndpoint($"/swagger/{ApiTags.Management}/swagger.json", ApiTags.Management);
     options.RoutePrefix = string.Empty;
 });
 

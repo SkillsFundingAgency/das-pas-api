@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.PAS.Api.Authentication;
 using SFA.DAS.PAS.Api.Infrastructure;
@@ -10,6 +11,8 @@ namespace SFA.DAS.PAS.Api.Controllers;
 
 [Route("users/{userRef}/settings")]
 [ApiController]
+[ApiVersion(1)]
+[RequireApiVersionHeader]
 [Authorize(Policy = Policies.Management)]
 [Tags(ApiTags.Management)]
 public class UserSettingsController(IUserSettingsService userSettingsService) : ControllerBase
