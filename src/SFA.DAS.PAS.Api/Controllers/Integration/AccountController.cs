@@ -1,15 +1,16 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.PAS.Api.Authentication;
+using SFA.DAS.PAS.Api.Infrastructure;
 using SFA.DAS.PAS.Application.Models;
 using SFA.DAS.PAS.Application.Services;
 
-namespace SFA.DAS.PAS.Api.Controllers;
+namespace SFA.DAS.PAS.Api.Controllers.Integration;
 
 [Route("api")]
 [ApiController]
 [Authorize(Policy = Policies.ReadAccountUsers)]
-[Tags("Integration")]
+[Tags(ApiTags.Integration)]
 public class AccountController(IUserService _userService) : ControllerBase
 {
     [HttpGet]

@@ -1,58 +1,73 @@
 using Asp.Versioning;
-using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.OpenApi;
+using SFA.DAS.Api.Common.Infrastructure;
 using SFA.DAS.PAS.Api.AppStart;
 using SFA.DAS.PAS.Api.Authentication;
 using SFA.DAS.PAS.Api.Extensions;
+using SFA.DAS.PAS.Api.Infrastructure;
 using SFA.DAS.PAS.Application.Extensions;
 using SFA.DAS.PAS.Data.Extensions;
+using SFA.DAS.Telemetry.Startup;
 
 var builder = WebApplication.CreateBuilder(args);
 
 IConfiguration _configuration = builder.Configuration.LoadConfiguration();
 
 bool _isLocal = _configuration.IsLocalEnvironment();
+string connectionString = _configuration["DatabaseConnectionString"]!;
 
 // Add services to the container.
 
-builder.Services.AddControllers(options =>
-{
-    if (_isLocal)
-    {
-        options.Filters.Add(new AllowAnonymousFilter());
-    }
-});
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new Microsoft.OpenApi.OpenApiInfo
-    {
-        Title = "SFA.DAS.PAS.Api",
-        Version = "v1"
-    });
-});
-
-string connectionString = _configuration["DatabaseConnectionString"]!;
-
-builder
-    .Services
+builder.Services
     .AddAuthentication(_configuration, _isLocal)
     .AddPasDataContext(connectionString)
-    .AddApplicationServices()
-    .AddApiVersioning(opt =>
+    .AddApplicationServices();
+
+builder.Services
+    .AddLogging()
+    .AddTelemetryNotFoundAsSuccessfulResponse();
+
+builder.Services
+    .AddOpenApi()
+    .AddEndpointsApiExplorer()
+    .AddSwaggerGen(options =>
+    {
+        options.SwaggerDoc(ApiTags.Integration, new OpenApiInfo
+        {
+            Title = "PAS API Integration Endpoints",
+            Version = "v1"
+        });
+        options.SwaggerDoc(ApiTags.Management, new OpenApiInfo
+        {
+            Title = "PAS API Management Endpoints",
+            Version = "v1"
+        });
+    });
+
+builder.Services.AddControllers(options =>
+    {
+        options.Conventions.Add(new ApiExplorerGroupingByTagAttributeConvention());
+    });
+
+builder.Services.AddApiVersioning(opt =>
     {
         opt.ApiVersionReader = new HeaderApiVersionReader("X-Version");
         opt.DefaultApiVersion = new ApiVersion(1, 0);
     });
 
+
 var app = builder.Build();
 
+
 // Configure the HTTP request pipeline.
+
 app.MapOpenApi();
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
-    options.SwaggerEndpoint("swagger/v1/swagger.json", "v1");
+    options.SwaggerEndpoint($"swagger/{ApiTags.Integration}/swagger.json", ApiTags.Integration);
+    options.SwaggerEndpoint($"swagger/{ApiTags.Management}/swagger.json", ApiTags.Management);
     options.RoutePrefix = string.Empty;
 });
 
@@ -61,6 +76,19 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+app.UseHealthChecks("/ping",
+    new HealthCheckOptions
+    {
+        ResponseWriter = HealthCheckResponseWriter.WriteJsonResponse
+    });
+
+if (_isLocal)
+{
+    app.MapControllers().AllowAnonymous();
+}
+else
+{
+    app.MapControllers();
+}
 
 await app.RunAsync();
