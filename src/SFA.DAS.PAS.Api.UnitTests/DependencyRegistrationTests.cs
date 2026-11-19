@@ -24,5 +24,6 @@ public class DependencyRegistrationTests
 
         Assert.That(ActivatorUtilities.CreateInstance<AccountController>(scope.ServiceProvider), Is.Not.Null);
         Assert.That(ActivatorUtilities.CreateInstance<UserSettingsController>(scope.ServiceProvider), Is.Not.Null);
+        Assert.That(ActivatorUtilities.CreateInstance<UserController>(scope.ServiceProvider), Is.Not.Null);
     }
 }

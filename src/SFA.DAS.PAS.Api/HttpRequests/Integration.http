@@ -3,4 +3,8 @@
 GET {{baseUrl}}/api/account/10000001/users
 Accept: application/json
 
+### Get user settings
+GET {{baseUrl}}/api/user/USR-0001
+Accept: application/json
+
 ###
