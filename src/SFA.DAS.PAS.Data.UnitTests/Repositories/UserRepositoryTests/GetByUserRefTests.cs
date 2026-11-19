@@ -25,33 +25,24 @@ internal class GetByUserRefTests
         _context.Dispose();
     }
 
-    [Test, RecursiveMoqAutoData]
-    public async Task WhenUserExists_ThenReturnsMatchingActiveUser(User user)
+    [Test]
+    [RecursiveMoqInlineAutoData(false)]
+    [RecursiveMoqInlineAutoData(true)]
+    public async Task WhenUserExists_ThenReturnsMatchingUser(bool isDeleted, User user)
     {
-        user.IsDeleted = false;
+        user.IsDeleted = isDeleted;
         user.UserSettings = null;
         await SeedAsync(user);
 
-        var result = await _sut.GetActiveUserByUserRef(user.UserRef, CancellationToken.None);
+        var result = await _sut.GetUserByUserRef(user.UserRef, CancellationToken.None);
 
         Assert.That(result, Is.Not.Null);
         Assert.Multiple(() =>
         {
             Assert.That(result.Id, Is.EqualTo(user.Id));
             Assert.That(result.UserRef, Is.EqualTo(user.UserRef));
+            Assert.That(result.IsDeleted, Is.EqualTo(isDeleted));
         });
-    }
-
-    [Test, RecursiveMoqAutoData]
-    public async Task WhenUserIsDeleted_ThenReturnsNull(User user)
-    {
-        user.IsDeleted = true;
-        user.UserSettings = null;
-        await SeedAsync(user);
-
-        var result = await _sut.GetActiveUserByUserRef(user.UserRef, CancellationToken.None);
-
-        Assert.That(result, Is.Null);
     }
 
     [Test, RecursiveMoqAutoData]
@@ -61,19 +52,21 @@ internal class GetByUserRefTests
         user.UserSettings = null;
         await SeedAsync(user);
 
-        var result = await _sut.GetActiveUserByUserRef(missingUserRef, CancellationToken.None);
+        var result = await _sut.GetUserByUserRef(missingUserRef, CancellationToken.None);
 
         Assert.That(result, Is.Null);
     }
 
-    [Test, RecursiveMoqAutoData]
-    public async Task WhenUserSettingsExist_ThenIncludesUserSettings(User user, UserSettings settings)
+    [Test]
+    [RecursiveMoqInlineAutoData(false)]
+    [RecursiveMoqInlineAutoData(true)]
+    public async Task WhenUserSettingsExist_ThenIncludesUserSettings(bool isDeleted, User user, UserSettings settings)
     {
-        user.IsDeleted = false;
+        user.IsDeleted = isDeleted;
         user.UserSettings = LinkSettings(user, settings);
         await SeedAsync(user);
 
-        var result = await _sut.GetActiveUserByUserRef(user.UserRef, CancellationToken.None);
+        var result = await _sut.GetUserByUserRef(user.UserRef, CancellationToken.None);
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.UserSettings, Is.Not.Null);
@@ -94,28 +87,25 @@ internal class GetByUserRefTests
         user.UserSettings = null;
         await SeedAsync(user);
 
-        var result = await _sut.GetActiveUserByUserRef(user.UserRef, CancellationToken.None);
+        var result = await _sut.GetUserByUserRef(user.UserRef, CancellationToken.None);
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.UserSettings, Is.Null);
     }
 
+    // write test to ensure deleted user us returned as well
     [Test, RecursiveMoqAutoData]
-    public async Task WhenIncludedUserSettingsAreUpdated_ThenPersistsTrackedChanges(User user, UserSettings settings)
+    public async Task WhenUserIsDeleted_ThenReturnsDeletedUser(User user)
     {
-        user.IsDeleted = false;
-        user.UserSettings = LinkSettings(user, settings);
+        user.IsDeleted = true;
+        user.UserSettings = null;
         await SeedAsync(user);
-        var result = await _sut.GetActiveUserByUserRef(user.UserRef, CancellationToken.None);
+
+        // Action
+        var result = await _sut.GetUserByUserRef(user.UserRef, CancellationToken.None);
+
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.UserSettings, Is.Not.Null);
-        result.UserSettings.ReceiveNotifications = !settings.ReceiveNotifications;
-
-        await new UserSettingsRepository(_context).Update(result.UserSettings, CancellationToken.None);
-        _context.ChangeTracker.Clear();
-
-        var saved = await _context.UserSettings.SingleAsync();
-        Assert.That(saved.ReceiveNotifications, Is.EqualTo(!settings.ReceiveNotifications));
+        Assert.That(result.IsDeleted, Is.True);
     }
 
     private static UserSettings LinkSettings(User user, UserSettings settings)

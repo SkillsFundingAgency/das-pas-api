@@ -13,14 +13,7 @@ public class UserService(IUserRepository _userRepository) : IUserService
 {
     public async Task<IEnumerable<UserModel>> GetUsersByUkprn(int ukprn, CancellationToken cancellationToken)
     {
-        var users = await _userRepository.GetUsersByUkprn(ukprn, cancellationToken);
-        return users.Select(u => new UserModel
-        {
-            UserRef = u.UserRef,
-            EmailAddress = u.Email,
-            DisplayName = u.DisplayName,
-            ReceiveNotifications = u.UserSettings?.ReceiveNotifications ?? true,
-            IsSuperUser = u.UserType == UserType.SuperUser
-        });
+        List<User> users = await _userRepository.GetUsersByUkprn(ukprn, cancellationToken);
+        return users.Select(u => (UserModel)u);
     }
 }

@@ -5,5 +5,5 @@ namespace SFA.DAS.PAS.Domain.Interfaces;
 public interface IUserRepository
 {
     Task<List<User>> GetUsersByUkprn(int ukprn, CancellationToken cancellationToken);
-    Task<User?> GetActiveUserByUserRef(string userRef, CancellationToken cancellationToken);
+    Task<User?> GetUserByUserRef(string userRef, CancellationToken cancellationToken);
 }

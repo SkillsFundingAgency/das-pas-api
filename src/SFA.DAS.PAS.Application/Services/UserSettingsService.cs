@@ -14,26 +14,20 @@ public class UserSettingsService(IUserSettingsRepository _userSettingsRepository
 {
     public async Task<UserModel?> GetUserSettings(string userRef, CancellationToken cancellationToken)
     {
-        var user = await userRepository.GetActiveUserByUserRef(userRef, cancellationToken);
+        var user = await userRepository.GetUserByUserRef(userRef, cancellationToken);
         if (user is null)
         {
             return null;
         }
 
-        return new UserModel
-        {
-            UserRef = user.UserRef,
-            EmailAddress = user.Email,
-            DisplayName = user.DisplayName,
-            ReceiveNotifications = user.UserSettings?.ReceiveNotifications ?? true,
-            IsSuperUser = user.UserType == UserType.SuperUser
-        };
+        UserModel model = user;
+        return model;
     }
 
     public async Task<bool> UpsertUserSettings(UserSettingsModel userSettings, CancellationToken cancellationToken)
     {
-        var user = await userRepository.GetActiveUserByUserRef(userSettings.UserRef, cancellationToken);
-        if (user is null)
+        var user = await userRepository.GetUserByUserRef(userSettings.UserRef, cancellationToken);
+        if (user is null || user.IsDeleted)
         {
             return false;
         }
