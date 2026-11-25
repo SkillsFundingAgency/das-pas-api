@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.OpenApi;
 using NServiceBus.ObjectBuilder.MSDependencyInjection;
@@ -7,6 +8,7 @@ using SFA.DAS.PAS.Api.AppStart;
 using SFA.DAS.PAS.Api.Authentication;
 using SFA.DAS.PAS.Api.Extensions;
 using SFA.DAS.PAS.Api.Infrastructure;
+using SFA.DAS.PAS.Api.Validators;
 using SFA.DAS.PAS.Application.Extensions;
 using SFA.DAS.PAS.Data.Extensions;
 
@@ -74,6 +76,7 @@ builder.Services.AddControllers(options =>
     });
 
 builder.Services.AddApiVersioningRegistration();
+builder.Services.AddValidatorsFromAssemblyContaining<ProviderEmailModelValidator>();
 
 
 var app = builder.Build();
