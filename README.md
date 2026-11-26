@@ -50,7 +50,7 @@ _For Example_
 * A clone of this repository
 * A code editor that supports Azure functions and .NetCore 3.1
 * A CosmosDB instance or emulator
-* An Azure Service Bus instance
+* A `.learningtransport` folder in the solution folder or the root of solution folder
 * An Azure Active Directory account with the appropriate roles as per the [config](https://github.com/SkillsFundingAgency/das-employer-config/blob/master/das-tools-servicebus-support/SFA.DAS.Tools.Servicebus.Support.json)
 * The [das-audit](https://github.com/SkillsFundingAgency/das-audit) API available either running locally or accessible in an Azure tenancy    
 ```

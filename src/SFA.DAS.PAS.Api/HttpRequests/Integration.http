@@ -3,4 +3,27 @@
 GET {{baseUrl}}/api/account/10000001/users
 Accept: application/json
 
+### Get user settings
+GET {{baseUrl}}/api/user/USR-0001
+
+### Send email to all provider users who have notifications turned on
+POST {{baseUrl}}/api/email/10000001/send
+Content-Type: application/json
+
+{
+  "templateId": "ebb28424-b1ce-4374-b24b-a240f0cecdc1",
+  "tokens": {"coursename": "Abattoir worker", "larscode": "274"},
+  "explicitEmailAddresses":["dev@gmail.com"]
+}
+
 ###
+## additionally send to explicit email addresses 
+POST {{baseUrl}}/api/email/10000001/send
+Content-Type: application/json
+
+{
+  "templateId": "ebb28424-b1ce-4374-b24b-a240f0cecdc1",
+  "tokens": {"coursename": "Abattoir worker", "larscode": "274"},
+  "explicitEmailAddresses":[]
+}
+

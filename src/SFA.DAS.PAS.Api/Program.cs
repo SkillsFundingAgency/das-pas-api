@@ -1,16 +1,26 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.OpenApi;
+using NServiceBus.ObjectBuilder.MSDependencyInjection;
 using SFA.DAS.Api.Common.Infrastructure;
+using SFA.DAS.NServiceBus.Configuration.MicrosoftDependencyInjection;
 using SFA.DAS.PAS.Api.AppStart;
 using SFA.DAS.PAS.Api.Authentication;
 using SFA.DAS.PAS.Api.Extensions;
 using SFA.DAS.PAS.Api.Infrastructure;
+using SFA.DAS.PAS.Api.Validators;
 using SFA.DAS.PAS.Application.Extensions;
 using SFA.DAS.PAS.Data.Extensions;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+builder.Host.UseServiceProviderFactory(new NServiceBusServiceProviderFactory());
 
 IConfiguration _configuration = builder.Configuration.LoadConfiguration();
+
+builder.Host.ConfigureContainer<UpdateableServiceProvider>(containerBuilder =>
+{
+    Task.FromResult(containerBuilder.StartNServiceBus(_configuration, "SFA.DAS.PAS.Api"));
+});
 
 bool _isLocal = _configuration.IsLocalEnvironment();
 string connectionString = _configuration["DatabaseConnectionString"]!;
@@ -66,6 +76,7 @@ builder.Services.AddControllers(options =>
     });
 
 builder.Services.AddApiVersioningRegistration();
+builder.Services.AddValidatorsFromAssemblyContaining<ProviderEmailModelValidator>();
 
 
 var app = builder.Build();

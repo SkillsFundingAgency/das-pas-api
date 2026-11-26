@@ -6,15 +6,28 @@ namespace SFA.DAS.PAS.Application.Services;
 
 public interface IUserSettingsService
 {
+    Task<UserModel?> GetUserSettings(string userRef, CancellationToken cancellationToken);
     Task<bool> UpsertUserSettings(UserSettingsModel userSettings, CancellationToken cancellationToken);
 }
 
 public class UserSettingsService(IUserSettingsRepository _userSettingsRepository, IUserRepository userRepository) : IUserSettingsService
 {
+    public async Task<UserModel?> GetUserSettings(string userRef, CancellationToken cancellationToken)
+    {
+        var user = await userRepository.GetUserByUserRef(userRef, cancellationToken);
+        if (user is null)
+        {
+            return null;
+        }
+
+        UserModel model = user;
+        return model;
+    }
+
     public async Task<bool> UpsertUserSettings(UserSettingsModel userSettings, CancellationToken cancellationToken)
     {
-        var user = await userRepository.GetActiveUserByUserRef(userSettings.UserRef, cancellationToken);
-        if (user is null)
+        var user = await userRepository.GetUserByUserRef(userSettings.UserRef, cancellationToken);
+        if (user is null || user.IsDeleted)
         {
             return false;
         }
